@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#901518">
+  <meta name="description" content="Pusat Informasi dan Layanan Kurikulum SMKS Dua Putra Biinmaffo.">
+  <title>WAKAKUR | SMKS Dua Putra Biinmaffo</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#konten">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#beranda" aria-label="Wakakur, halaman beranda">
+        <span class="brand-mark">W</span>
+        <span><strong>WAKAKUR</strong><small>SMKS DUA PUTRA BIINMAFFO</small></span>
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Buka navigasi" aria-expanded="false">☰</button>
+      <nav class="main-nav" id="mainNav" aria-label="Navigasi utama">
+        <a href="#beranda" class="active">Beranda</a>
+        <a href="#profil">Profil</a>
+        <a href="#kalender">Kalender</a>
+        <a href="#jadwal">Jadwal</a>
+        <a href="#pengumuman">Pengumuman</a>
+        <a href="#unduhan">Unduhan</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="konten">
+    <section class="hero" id="beranda">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">PUSAT INFORMASI DAN LAYANAN KURIKULUM</span>
+          <h1>Belajar terarah,<br><em>sekolah bertumbuh.</em></h1>
+          <p>Portal informasi akademik SMKS Dua Putra Biinmaffo untuk guru, peserta didik, dan orang tua.</p>
+          <div class="hero-actions">
+            <a class="btn btn-gold" href="#kalender">Lihat kalender akademik</a>
+            <a class="btn btn-outline" href="#pengumuman">Pengumuman terbaru</a>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="panel-top"><span class="live-dot"></span> INFORMASI AKADEMIK</div>
+          <div class="panel-date" id="todayDate">Memuat tanggal…</div>
+          <h2>Informasi kurikulum dalam satu tempat.</h2>
+          <p>Jadwal, kalender, agenda, dan dokumen akademik dapat diakses melalui satu portal.</p>
+          <div class="panel-bottom"><span>SMK Pariwisata</span><span>•</span><span>TTU, NTT</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="quick-strip">
+      <div class="container quick-grid">
+        <a href="#jadwal"><span class="quick-icon">▦</span><span><strong>Jadwal Pelajaran</strong><small>Informasi kelas</small></span></a>
+        <a href="#kalender"><span class="quick-icon">▣</span><span><strong>Kalender Akademik</strong><small>Agenda sekolah</small></span></a>
+        <a href="#pengumuman"><span class="quick-icon">▤</span><span><strong>Pengumuman</strong><small>Informasi terbaru</small></span></a>
+        <a href="#unduhan"><span class="quick-icon">⇩</span><span><strong>Unduhan</strong><small>Dokumen publik</small></span></a>
+      </div>
+    </section>
+
+    <section class="section" id="profil">
+      <div class="container two-col">
+        <div>
+          <span class="eyebrow dark">TENTANG LAYANAN KURIKULUM</span>
+          <h2 class="section-title">Satu portal untuk mendukung proses pembelajaran.</h2>
+        </div>
+        <div class="section-copy">
+          <p>Website Wakakur merupakan pusat informasi akademik sekolah. Portal ini dikembangkan untuk membantu warga sekolah memperoleh informasi kurikulum secara lebih mudah, tertib, dan terarah.</p>
+          <p>Informasi dan dokumen akan diperbarui sesuai kebijakan serta kalender pendidikan sekolah.</p>
+          <div class="school-facts">
+            <div><strong>Perhotelan</strong><small>Program Keahlian</small></div>
+            <div><strong>Usaha Layanan Pariwisata</strong><small>Program Keahlian</small></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-soft" id="pengumuman">
+      <div class="container">
+        <div class="section-heading">
+          <div><span class="eyebrow dark">INFORMASI SEKOLAH</span><h2 class="section-title">Pengumuman terbaru</h2></div>
+          <span class="section-note">Informasi resmi bidang kurikulum</span>
+        </div>
+        <div class="announcement-grid" id="announcementList"></div>
+      </div>
+    </section>
+
+    <section class="section" id="kalender">
+      <div class="container">
+        <div class="section-heading">
+          <div><span class="eyebrow dark">RENCANA KEGIATAN</span><h2 class="section-title">Kalender akademik</h2></div>
+          <span class="section-note">Contoh tampilan — data perlu diperbarui admin</span>
+        </div>
+        <div class="calendar-layout">
+          <div class="calendar-card">
+            <div class="calendar-head"><div><small>AGENDA SEKOLAH</small><h3 id="calendarMonth">November 2026</h3></div><span class="calendar-symbol">▦</span></div>
+            <div class="calendar-days"><span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span></div>
+            <div class="calendar-dates" id="calendarDates"></div>
+            <p class="calendar-foot">Tanggal bertanda maroon memiliki agenda contoh.</p>
+          </div>
+          <div class="agenda-card">
+            <h3>Agenda terdekat</h3>
+            <div id="agendaList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-soft" id="jadwal">
+      <div class="container">
+        <div class="section-heading">
+          <div><span class="eyebrow dark">KEGIATAN PEMBELAJARAN</span><h2 class="section-title">Jadwal pelajaran</h2></div>
+          <span class="section-note">Jadwal resmi akan ditampilkan setelah data dimasukkan</span>
+        </div>
+        <div class="schedule-placeholder">
+          <div class="placeholder-icon">▦</div>
+          <div><h3>Jadwal pembelajaran sekolah</h3><p>Bagian ini disiapkan untuk jadwal kelas X, XI, XII serta jadwal mengajar guru.</p></div>
+          <span class="status-tag">Menunggu data resmi</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="unduhan">
+      <div class="container">
+        <div class="section-heading">
+          <div><span class="eyebrow dark">PUSAT DOKUMEN</span><h2 class="section-title">Unduhan publik</h2></div>
+          <span class="section-note">Hanya dokumen yang boleh diakses publik</span>
+        </div>
+        <div class="download-grid">
+          <div class="download-item"><span class="file-icon">PDF</span><div><strong>Panduan Akademik</strong><small>Dokumen akan ditambahkan</small></div><span class="muted">Belum tersedia</span></div>
+          <div class="download-item"><span class="file-icon">PDF</span><div><strong>Kalender Pendidikan</strong><small>Dokumen resmi sekolah</small></div><span class="muted">Belum tersedia</span></div>
+          <div class="download-item"><span class="file-icon">PDF</span><div><strong>Informasi Asesmen</strong><small>Ketentuan pelaksanaan asesmen</small></div><span class="muted">Belum tersedia</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div><strong>WAKAKUR</strong><p>SMKS Dua Putra Biinmaffo</p><small>Jl. Trans Kefa–Eban Km. 15, Desa Bijaepasu, Miomaffo Tengah, TTU, NTT.</small></div>
+      <div class="footer-right"><span>Pusat Informasi dan Layanan Kurikulum</span><small>© <span id="year"></span> SMKS Dua Putra Biinmaffo</small></div>
+    </div>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
