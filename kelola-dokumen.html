@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Kelola Dokumen - Wakakur</title>
+
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <style>
+    .document-admin {
+      max-width: 1100px;
+      margin: 35px auto;
+      padding: 20px;
+    }
+
+    .document-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .document-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+
+    .document-form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .document-form label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .document-form input,
+    .document-form textarea,
+    .document-form select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font: inherit;
+    }
+
+    .document-form textarea {
+      min-height: 90px;
+    }
+
+    .document-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .document-options label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: normal;
+    }
+
+    .document-options input {
+      width: auto;
+    }
+
+    .document-button {
+      display: inline-block;
+      padding: 10px 16px;
+      background: #901518;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .document-button.secondary {
+      background: #555;
+    }
+
+    .document-button.danger {
+      background: #a32626;
+    }
+
+    .document-button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .document-table-wrap {
+      overflow-x: auto;
+    }
+
+    .document-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    .document-table th,
+    .document-table td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .document-table th {
+      background: #f5f5f5;
+    }
+
+    .document-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .document-actions button {
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+
+    #documentMessage {
+      margin: 12px 0;
+      font-weight: 600;
+    }
+
+    .document-note {
+      color: #555;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .document-admin {
+        padding: 12px;
+        margin: 20px auto;
+      }
+
+      .document-card {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="document-admin">
+
+    <div class="document-header">
+      <div>
+        <h1>Kelola Dokumen</h1>
+        <p>Pengelolaan dokumen dan berkas sekolah.</p>
+      </div>
+
+      <a href="dashboard-admin.html" class="document-button secondary">
+        Kembali ke Dashboard
+      </a>
+    </div>
+
+    <section class="document-card">
+      <h2 id="formTitle">Tambah Dokumen</h2>
+
+      <p class="document-note">
+        Format berkas yang diperbolehkan adalah PDF, maksimal 50 MB.
+        Dokumen internal hanya dapat diakses admin dan wakakur.
+      </p>
+
+      <form id="documentForm" class="document-form">
+
+        <input type="hidden" id="documentId">
+
+        <div>
+          <label for="documentTitle">Judul Dokumen</label>
+          <input type="text" id="documentTitle" required maxlength="200"
+            placeholder="Masukkan judul dokumen">
+        </div>
+
+        <div>
+          <label for="documentDescription">Deskripsi</label>
+          <textarea id="documentDescription"
+            placeholder="Keterangan dokumen"></textarea>
+        </div>
+
+        <div>
+          <label for="documentCategory">Kategori</label>
+          <select id="documentCategory" required>
+            <option value="">Pilih kategori</option>
+            <option value="Kalender Akademik">Kalender Akademik</option>
+            <option value="Kurikulum">Kurikulum</option>
+            <option value="Jadwal Pembelajaran">Jadwal Pembelajaran</option>
+            <option value="Perangkat Pembelajaran">Perangkat Pembelajaran</option>
+            <option value="Administrasi Guru">Administrasi Guru</option>
+            <option value="Surat Keputusan">Surat Keputusan</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="documentFile">File PDF</label>
+          <input type="file" id="documentFile" accept="application/pdf">
+          <p id="fileHelp" class="document-note">
+            Pilih file PDF. File wajib dipilih saat menambahkan dokumen.
+          </p>
+        </div>
+
+        <div>
+          <label>Akses Dokumen</label>
+          <div class="document-options">
+            <label>
+              <input type="radio" name="documentAccess"
+                value="public" checked>
+              Publik
+            </label>
+
+            <label>
+              <input type="radio" name="documentAccess"
+                value="internal">
+              Internal
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label>Status Publikasi</label>
+          <div class="document-options">
+            <label>
+              <input type="checkbox" id="documentPublished">
+              Terbitkan dokumen
+            </label>
+          </div>
+        </div>
+
+        <div class="document-actions">
+          <button type="submit" id="saveDocumentButton"
+            class="document-button">
+            Simpan Dokumen
+          </button>
+
+          <button type="button" id="cancelEditButton"
+            class="document-button secondary" hidden>
+            Batal Edit
+          </button>
+        </div>
+
+      </form>
+
+      <p id="documentMessage" role="status"></p>
+    </section>
+
+    <section class="document-card">
+      <h2>Daftar Dokumen</h2>
+
+      <div class="document-table-wrap">
+        <table class="document-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Judul Dokumen</th>
+              <th>Kategori</th>
+              <th>Akses</th>
+              <th>Status</th>
+              <th>Tindakan</th>
+            </tr>
+          </thead>
+
+          <tbody id="documentTableBody">
+            <tr>
+              <td colspan="6">Memuat dokumen...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/kelola-dokumen.js"></script>
+
+</body>
+</html>
