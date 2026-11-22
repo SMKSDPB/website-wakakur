@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Pengumuman - Wakakur</title>
+
+  <style>
+    :root {
+      --maroon: #901518;
+      --yellow: #f5d66e;
+      --white: #ffffff;
+      --background: #f5f6f8;
+      --text: #292929;
+      --border: #dddddd;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--background);
+      color: var(--text);
+    }
+
+    header {
+      background: var(--maroon);
+      color: var(--white);
+      padding: 20px;
+    }
+
+    .header-content,
+    main {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    header h1 {
+      margin: 0 0 6px;
+      font-size: 23px;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    main {
+      padding: 24px 16px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: var(--maroon);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .panel {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: var(--maroon);
+      font-size: 19px;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 7px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    button {
+      border: none;
+      border-radius: 6px;
+      padding: 11px 17px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 12px 6px 0 0;
+    }
+
+    .primary-button {
+      background: var(--maroon);
+      color: white;
+    }
+
+    .secondary-button {
+      background: var(--yellow);
+      color: #292929;
+    }
+
+    .delete-button {
+      background: #b42318;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #formMessage {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8f0e9;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+
+    .published {
+      color: #16803c;
+    }
+
+    .draft {
+      color: #a15c00;
+    }
+
+    @media (max-width: 600px) {
+      .panel {
+        padding: 16px;
+      }
+
+      header h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="header-content">
+      <h1>Kelola Pengumuman</h1>
+      <p>Dashboard Wakil Kepala Sekolah Bidang Kurikulum</p>
+    </div>
+  </header>
+
+  <main>
+
+    <a class="back-link" href="dashboard-admin.html">
+      ← Kembali ke Dashboard
+    </a>
+
+    <section class="panel">
+      <h2 id="formTitle">Tambah Pengumuman</h2>
+
+      <form id="announcementForm">
+
+        <input type="hidden" id="announcementId">
+
+        <label for="announcementTitle">Judul Pengumuman</label>
+        <input
+          type="text"
+          id="announcementTitle"
+          maxlength="200"
+          placeholder="Masukkan judul pengumuman"
+          required
+        >
+
+        <label for="announcementContent">Isi Pengumuman</label>
+        <textarea
+          id="announcementContent"
+          placeholder="Tuliskan isi pengumuman..."
+          required
+        ></textarea>
+
+        <label for="announcementStatus">Status Publikasi</label>
+        <select id="announcementStatus" required>
+          <option value="draft">Simpan sebagai Draft</option>
+          <option value="published">Terbitkan</option>
+        </select>
+
+        <button type="submit" class="primary-button" id="saveButton">
+          Simpan Pengumuman
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="cancelButton"
+          hidden
+        >
+          Batal Edit
+        </button>
+
+        <p id="formMessage" role="status" aria-live="polite"></p>
+
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Daftar Pengumuman</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Judul</th>
+              <th>Tanggal Publikasi</th>
+              <th>Status</th>
+              <th>Tindakan</th>
+            </tr>
+          </thead>
+
+          <tbody id="announcementTable">
+            <tr>
+              <td colspan="5">Memuat data pengumuman...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/kelola-pengumuman.js"></script>
+
+</body>
+</html>
