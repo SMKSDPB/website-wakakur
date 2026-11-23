@@ -42,21 +42,35 @@
     )?.value || "public";
   }
 
-  function getBucket(access) {
-    return access === "internal" ? INTERNAL_BUCKET : PUBLIC_BUCKET;
+  // Hanya dokumen Publik + Terbit yang boleh masuk bucket publik.
+  function getBucket(isPublic, isPublished) {
+    return isPublic && isPublished
+      ? PUBLIC_BUCKET
+      : INTERNAL_BUCKET;
   }
 
   function splitFilePath(filePath) {
+    if (!filePath || typeof filePath !== "string") {
+      throw new Error("Lokasi file dokumen tidak valid.");
+    }
+
     const separator = filePath.indexOf("/");
 
     if (separator < 1) {
       throw new Error("Lokasi file dokumen tidak valid.");
     }
 
-    return {
-      bucket: filePath.substring(0, separator),
-      path: filePath.substring(separator + 1)
-    };
+    const bucket = filePath.substring(0, separator);
+    const path = filePath.substring(separator + 1);
+
+    if (
+      ![PUBLIC_BUCKET, INTERNAL_BUCKET].includes(bucket) ||
+      !path
+    ) {
+      throw new Error("Bucket atau lokasi file tidak dikenal.");
+    }
+
+    return { bucket, path };
   }
 
   async function checkAccess() {
@@ -187,17 +201,16 @@
     }
   }
 
-  function createStoragePath(file) {
-    const safeName = file.name
+  function createStoragePath(fileName) {
+    const safeName = fileName
       .normalize("NFKD")
       .replace(/[^a-zA-Z0-9._-]/g, "_");
 
     return Date.now() + "_" + crypto.randomUUID() + "_" + safeName;
   }
 
-  async function uploadFile(file, access) {
-    const bucket = getBucket(access);
-    const path = createStoragePath(file);
+  async function uploadFile(file, bucket) {
+    const path = createStoragePath(file.name);
 
     const { error } = await client.storage
       .from(bucket)
@@ -206,9 +219,7 @@
         upsert: false
       });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     return bucket + "/" + path;
   }
@@ -222,9 +233,40 @@
       .from(location.bucket)
       .remove([location.path]);
 
-    if (error) {
-      throw error;
+    if (error) throw error;
+  }
+
+  // Memindahkan file lama ke bucket tujuan tanpa meminta unggah ulang.
+  async function migrateStoredFile(oldFilePath, targetBucket) {
+    const oldLocation = splitFilePath(oldFilePath);
+
+    if (oldLocation.bucket === targetBucket) {
+      return oldFilePath;
     }
+
+    const { data: fileBlob, error: downloadError } = await client.storage
+      .from(oldLocation.bucket)
+      .download(oldLocation.path);
+
+    if (downloadError) throw downloadError;
+
+    if (!fileBlob) {
+      throw new Error("File lama tidak berhasil diunduh.");
+    }
+
+    const oldFileName = oldLocation.path.split("/").pop();
+    const newPath = createStoragePath(oldFileName);
+
+    const { error: uploadError } = await client.storage
+      .from(targetBucket)
+      .upload(newPath, fileBlob, {
+        contentType: "application/pdf",
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    return targetBucket + "/" + newPath;
   }
 
   async function openDocument(item) {
@@ -243,15 +285,13 @@
           .getPublicUrl(location.path);
 
         url = result.data.publicUrl;
-      } else if (location.bucket === INTERNAL_BUCKET) {
+      } else {
         const { data, error } = await client.storage
           .from(INTERNAL_BUCKET)
           .createSignedUrl(location.path, 60);
 
         if (error) throw error;
         url = data.signedUrl;
-      } else {
-        throw new Error("Bucket dokumen tidak dikenal.");
       }
 
       window.open(url, "_blank", "noopener,noreferrer");
@@ -284,7 +324,7 @@
 
     document.getElementById("formTitle").textContent = "Edit Dokumen";
     document.getElementById("fileHelp").textContent =
-      "Kosongkan file jika tidak ingin mengganti PDF. Jika mengubah akses publik/internal, pilih file PDF baru.";
+      "Kosongkan file jika tidak ingin mengganti PDF. Perubahan akses atau status akan memindahkan file otomatis.";
 
     saveButton.textContent = "Simpan Perubahan";
     cancelButton.hidden = false;
@@ -342,24 +382,28 @@
       document.getElementById("documentDescription").value.trim();
     const category = document.getElementById("documentCategory").value;
     const file = document.getElementById("documentFile").files[0];
+
     const access = getAccess();
     const isPublic = access === "public";
     const isPublished =
       document.getElementById("documentPublished").checked;
 
-    let uploadedFilePath = null;
+    const targetBucket = getBucket(isPublic, isPublished);
+
+    let newFilePath = null;
+    let oldFilePathToRemove = null;
+
+    const oldDocument = id
+      ? documents.find(function (doc) {
+          return doc.id === id;
+        })
+      : null;
 
     try {
       if (!title) throw new Error("Judul dokumen wajib diisi.");
       if (!category) throw new Error("Kategori dokumen wajib dipilih.");
 
       validateFile(file);
-
-      const oldDocument = id
-        ? documents.find(function (doc) {
-            return doc.id === id;
-          })
-        : null;
 
       if (id && !oldDocument) {
         throw new Error("Data dokumen yang diedit tidak ditemukan.");
@@ -369,12 +413,6 @@
         throw new Error("Silakan pilih file PDF terlebih dahulu.");
       }
 
-      if (id && !file && oldDocument.is_public !== isPublic) {
-        throw new Error(
-          "Untuk mengubah akses publik/internal, Anda wajib mengunggah ulang file PDF."
-        );
-      }
-
       saveButton.disabled = true;
       saveButton.textContent = "Menyimpan...";
       showMessage("Sedang memproses dokumen...");
@@ -382,8 +420,26 @@
       let filePath = oldDocument ? oldDocument.file_path : null;
 
       if (file) {
-        uploadedFilePath = await uploadFile(file, access);
-        filePath = uploadedFilePath;
+        // File baru langsung diunggah ke bucket sesuai status akhir.
+        newFilePath = await uploadFile(file, targetBucket);
+        filePath = newFilePath;
+
+        if (oldDocument && oldDocument.file_path) {
+          oldFilePathToRemove = oldDocument.file_path;
+        }
+      } else if (oldDocument && oldDocument.file_path) {
+        // Jika akses/status berubah, pindahkan file lama otomatis.
+        const oldLocation = splitFilePath(oldDocument.file_path);
+
+        if (oldLocation.bucket !== targetBucket) {
+          newFilePath = await migrateStoredFile(
+            oldDocument.file_path,
+            targetBucket
+          );
+
+          filePath = newFilePath;
+          oldFilePathToRemove = oldDocument.file_path;
+        }
       }
 
       const payload = {
@@ -401,29 +457,36 @@
         result = await client
           .from("documents")
           .update(payload)
-          .eq("id", id);
+          .eq("id", id)
+          .select("id")
+          .maybeSingle();
       } else {
         result = await client
           .from("documents")
-          .insert(payload);
+          .insert(payload)
+          .select("id")
+          .maybeSingle();
       }
 
       if (result.error) throw result.error;
 
-      if (
-        id &&
-        file &&
-        oldDocument.file_path &&
-        oldDocument.file_path !== uploadedFilePath
-      ) {
+      if (!result.data) {
+        throw new Error(
+          "Data tidak tersimpan. Periksa hak akses database."
+        );
+      }
+
+      // Hapus file lama hanya setelah perubahan database berhasil.
+      if (oldFilePathToRemove) {
         try {
-          await removeStoredFile(oldDocument.file_path);
+          await removeStoredFile(oldFilePathToRemove);
         } catch (storageError) {
           showMessage(
-            "Dokumen tersimpan, tetapi file lama gagal dibersihkan: " +
+            "Data berhasil disimpan, tetapi file lama gagal dibersihkan: " +
             storageError.message,
             true
           );
+
           resetForm();
           await loadDocuments();
           return;
@@ -440,18 +503,20 @@
       await loadDocuments();
 
     } catch (error) {
-      if (uploadedFilePath) {
+      // Jika penyimpanan database gagal, hapus file baru agar tidak menjadi yatim.
+      if (newFilePath) {
         try {
-          await removeStoredFile(uploadedFilePath);
+          await removeStoredFile(newFilePath);
         } catch (_) {
-          // File sementara mungkin perlu dibersihkan secara manual.
+          // Jika gagal, file perlu diperiksa dan dibersihkan secara manual.
         }
       }
 
       showMessage("Gagal menyimpan dokumen: " + error.message, true);
+
     } finally {
       saveButton.disabled = false;
-      saveButton.textContent = id
+      saveButton.textContent = document.getElementById("documentId").value
         ? "Simpan Perubahan"
         : "Simpan Dokumen";
     }
@@ -468,6 +533,7 @@
       const item = documents.find(function (doc) {
         return doc.id === id;
       });
+
       if (item) openDocument(item);
     }
 
