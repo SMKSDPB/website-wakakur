@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Jadwal Pembelajaran SMKS Dua Putra Biinmaffo">
+  <title>Jadwal Pembelajaran - SMKS Dua Putra Biinmaffo</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="container">
+      <h1>Jadwal Pembelajaran</h1>
+      <p>SMKS Dua Putra Biinmaffo</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Jadwal Mingguan</h2>
+      <p>Informasi jadwal pembelajaran yang telah dipublikasikan.</p>
+
+      <div id="publicScheduleMessage" role="status" aria-live="polite">
+        Memuat jadwal pembelajaran...
+      </div>
+
+      <div id="publicScheduleContent">
+        <p>Mohon tunggu...</p>
+      </div>
+    </section>
+
+    <p><a href="index.html">Kembali ke Beranda</a></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/jadwal.js"></script>
+</body>
+</html>
