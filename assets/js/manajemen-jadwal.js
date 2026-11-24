@@ -122,8 +122,7 @@
             Simpan Jadwal
           </button>
 
-          <button type="button" id="cancelScheduleButton"
-            hidden>
+          <button type="button" id="cancelScheduleButton" hidden>
             Batal Edit
           </button>
         </form>
@@ -201,6 +200,7 @@
                 <th>Ruangan</th>
                 <th>Tahun Pelajaran</th>
                 <th>Semester</th>
+                <th>Status Publikasi</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -226,7 +226,8 @@
       "filterYear",
       "filterSemester"
     ].forEach(id => {
-      document.getElementById(id).addEventListener("change", renderSchedules);
+      document.getElementById(id)
+        .addEventListener("change", renderSchedules);
     });
 
     document.getElementById("scheduleTableBody")
@@ -278,7 +279,7 @@
     if (!filtered.length) {
       body.innerHTML = `
         <tr>
-          <td colspan="10">Belum ada jadwal yang sesuai.</td>
+          <td colspan="11">Belum ada jadwal yang sesuai.</td>
         </tr>
       `;
       return;
@@ -289,6 +290,8 @@
       const teacher = teachers.find(x => x.id === assignment.teacher_id);
       const classroom = classes.find(x => x.id === assignment.class_id);
       const subject = subjects.find(x => x.id === assignment.subject_id);
+
+      const published = item.is_published === true;
 
       return `
         <tr>
@@ -303,8 +306,20 @@
           <td>${escapeHTML(item.academic_year)}</td>
           <td>${escapeHTML(item.semester)}</td>
           <td>
+            ${published
+              ? '<span style="color:green;font-weight:bold;">Dipublikasikan</span>'
+              : '<span style="color:#9a6500;font-weight:bold;">Draf</span>'}
+          </td>
+          <td>
             <button type="button" data-action="edit"
               data-id="${escapeHTML(item.id)}">Edit</button>
+
+            <button type="button"
+              data-action="${published ? "unpublish" : "publish"}"
+              data-id="${escapeHTML(item.id)}">
+              ${published ? "Tarik Publikasi" : "Publikasikan"}
+            </button>
+
             <button type="button" data-action="delete"
               data-id="${escapeHTML(item.id)}">Hapus</button>
           </td>
@@ -442,8 +457,52 @@
     if (!button) return;
 
     const id = button.dataset.id;
-    if (button.dataset.action === "edit") editSchedule(id);
-    if (button.dataset.action === "delete") deleteSchedule(id);
+    const action = button.dataset.action;
+
+    if (action === "edit") editSchedule(id);
+    if (action === "delete") deleteSchedule(id);
+    if (action === "publish") updatePublication(id, true);
+    if (action === "unpublish") updatePublication(id, false);
+  }
+
+  async function updatePublication(id, publish) {
+    const item = schedules.find(x => x.id === id);
+    if (!item) return;
+
+    if (!publish && !confirm(
+      "Tarik publikasi jadwal ini? Jadwal tidak lagi terlihat oleh publik."
+    )) {
+      return;
+    }
+
+    if (publish && !confirm(
+      "Publikasikan jadwal ini agar dapat dilihat oleh publik?"
+    )) {
+      return;
+    }
+
+    try {
+      const { error } = await client.from("schedules")
+        .update({ is_published: publish })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      showMessage(
+        publish
+          ? "Jadwal berhasil dipublikasikan."
+          : "Publikasi jadwal berhasil ditarik.",
+        "success"
+      );
+
+      await loadSchedules();
+
+    } catch (error) {
+      showMessage(
+        "Gagal mengubah status publikasi: " + error.message,
+        "error"
+      );
+    }
   }
 
   function editSchedule(id) {
@@ -489,7 +548,7 @@
 
   async function loadSchedules() {
     const { data, error } = await client.from("schedules")
-      .select("id, assignment_id, day_name, start_time, end_time, room_name, academic_year, semester")
+      .select("id, assignment_id, day_name, start_time, end_time, room_name, academic_year, semester, is_published")
       .order("day_name", { ascending: true })
       .order("start_time", { ascending: true });
 
