@@ -228,7 +228,7 @@
           <td>${escapeHTML(subject?.subject_name || "Data mapel tidak ditemukan")}</td>
           <td>${escapeHTML(item.hours_per_week)}</td>
           <td>${escapeHTML(item.academic_year)}</td>
-          <td>${item.semester == 1 ? "Ganjil" : "Genap"}</td>
+          <td>${escapeHTML(item.semester)}</td>
           <td>
             <div class="module-actions">
               <button data-action="edit" data-id="${escapeHTML(item.id)}">Edit</button>
@@ -342,7 +342,7 @@
       subject_id: document.getElementById("assignmentSubject").value,
       hours_per_week: Number(document.getElementById("assignmentHours").value),
       academic_year: document.getElementById("assignmentYear").value.trim(),
-      semester: Number(document.getElementById("assignmentSemester").value)
+      semester: document.getElementById("assignmentSemester").value
     };
   }
 
