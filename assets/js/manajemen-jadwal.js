@@ -33,15 +33,20 @@
     const user = sessionData.session.user;
 
     const { data: profile, error: profileError } = await client
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+  .from("profiles")
+  .select("role, is_active")
+  .eq("user_id", user.id)
+  .single();
 
     if (profileError || !profile) {
-      showMessage("Profil pengguna tidak ditemukan.", "error");
-      return;
-    }
+  showMessage("Profil pengguna tidak ditemukan: " + (profileError?.message || ""), "error");
+  return;
+}
+
+if (!profile.is_active) {
+  showMessage("Akun Anda tidak aktif.", "error");
+  return;
+}
 
     if (!["admin", "wakakur"].includes(profile.role)) {
       showMessage("Anda tidak memiliki akses ke halaman ini.", "error");
