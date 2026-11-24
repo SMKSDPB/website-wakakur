@@ -10,13 +10,9 @@
     message.className = `message ${type}`;
   }
 
-  function redirectToLogin() {
-    window.location.replace("admin.html");
-  }
-
   async function init() {
     if (!client) {
-      redirectToLogin();
+      window.location.replace("admin.html");
       return;
     }
 
@@ -24,7 +20,7 @@
       await client.auth.getSession();
 
     if (sessionError || !sessionData.session) {
-      redirectToLogin();
+      window.location.replace("admin.html");
       return;
     }
 
@@ -34,69 +30,95 @@
       .from("profiles")
       .select("role, is_active")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (profileError || !profile) {
-      showMessage("Profil pengguna tidak ditemukan.", "error");
-      return;
-    }
-
-    if (!profile.is_active) {
-      showMessage("Akun Anda tidak aktif.", "error");
-      return;
-    }
-
-    if (!["admin", "wakakur"].includes(profile.role)) {
-      showMessage("Anda tidak memiliki akses ke halaman ini.", "error");
+    if (
+      profileError ||
+      !profile ||
+      !profile.is_active ||
+      !["admin", "wakakur"].includes(profile.role)
+    ) {
+      showMessage("Akses ditolak.", "error");
       return;
     }
 
     content.innerHTML = "<p>Memuat data tugas mengajar...</p>";
 
-    const { data, error } = await client
-      .from("teaching_assignments")
-      .select(`
-        id,
-        academic_year,
-        semester,
-        hours_per_week,
-        teachers (full_name),
-        classes (class_name),
-        subjects (subject_name)
-      `)
-      .order("academic_year", { ascending: false });
+    const [assignmentsResult, teachersResult, classesResult, subjectsResult] =
+      await Promise.all([
+        client.from("teaching_assignments")
+          .select("id, teacher_id, class_id, subject_id, hours_per_week, academic_year, semester")
+          .order("academic_year", { ascending: true }),
 
-    if (error) {
+        client.from("teachers")
+          .select("id, full_name")
+          .order("full_name", { ascending: true }),
+
+        client.from("classes")
+          .select("id, class_name")
+          .order("class_name", { ascending: true }),
+
+        client.from("subjects")
+          .select("id, subject_name")
+          .order("subject_name", { ascending: true })
+      ]);
+
+    if (assignmentsResult.error) {
       content.innerHTML = "";
-      showMessage("Gagal mengambil data: " + error.message, "error");
+      showMessage(
+        "Gagal memuat tugas mengajar: " + assignmentsResult.error.message,
+        "error"
+      );
       return;
     }
 
-    if (!data || data.length === 0) {
+    if (teachersResult.error || classesResult.error || subjectsResult.error) {
+      content.innerHTML = "";
+      showMessage("Gagal memuat data pendukung.", "error");
+      return;
+    }
+
+    const assignments = assignmentsResult.data || [];
+    const teachers = teachersResult.data || [];
+    const classes = classesResult.data || [];
+    const subjects = subjectsResult.data || [];
+
+    if (assignments.length === 0) {
       content.innerHTML = "<p>Belum ada data tugas mengajar.</p>";
       showMessage("Data berhasil diperiksa.", "success");
       return;
     }
 
-    let rows = "";
+    const escapeHTML = value =>
+      String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
 
-    data.forEach((item, index) => {
-      rows += `
+    const rows = assignments.map((item, index) => {
+      const teacher = teachers.find(x => x.id === item.teacher_id);
+      const classroom = classes.find(x => x.id === item.class_id);
+      const subject = subjects.find(x => x.id === item.subject_id);
+
+      return `
         <tr>
           <td>${index + 1}</td>
-          <td>${item.teachers?.full_name || "-"}</td>
-          <td>${item.classes?.class_name || "-"}</td>
-          <td>${item.subjects?.subject_name || "-"}</td>
-          <td>${item.hours_per_week || 0}</td>
-          <td>${item.academic_year || "-"}</td>
-          <td>${item.semester || "-"}</td>
+          <td>${escapeHTML(teacher?.full_name || "Tidak ditemukan")}</td>
+          <td>${escapeHTML(classroom?.class_name || "Tidak ditemukan")}</td>
+          <td>${escapeHTML(subject?.subject_name || "Tidak ditemukan")}</td>
+          <td>${escapeHTML(item.hours_per_week)}</td>
+          <td>${escapeHTML(item.academic_year)}</td>
+          <td>${escapeHTML(item.semester)}</td>
         </tr>
       `;
-    });
+    }).join("");
 
     content.innerHTML = `
       <h3>Daftar Tugas Mengajar</h3>
-      <p>Data berikut akan digunakan sebagai dasar penyusunan jadwal.</p>
+      <p>Data tugas mengajar yang tersedia di database.</p>
 
       <div style="overflow-x:auto;">
         <table>
@@ -111,15 +133,13 @@
               <th>Semester</th>
             </tr>
           </thead>
-          <tbody>
-            ${rows}
-          </tbody>
+          <tbody>${rows}</tbody>
         </table>
       </div>
     `;
 
     showMessage(
-      "Data tugas mengajar berhasil dimuat: " + data.length + " data.",
+      "Berhasil memuat " + assignments.length + " data tugas mengajar.",
       "success"
     );
   }
