@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manajemen Jadwal Pembelajaran SMKS Dua Putra Biinmaffo">
+  <title>Manajemen Jadwal - Wakakur SMKS Dua Putra Biinmaffo</title>
+
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="main-header">
+    <div class="container">
+      <h1>Manajemen Jadwal Pembelajaran</h1>
+      <p>SMKS Dua Putra Biinmaffo</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Kelola Jadwal</h2>
+      <p>Tambah, lihat, ubah, dan hapus jadwal pembelajaran.</p>
+
+      <div id="scheduleMessage" role="status" aria-live="polite"></div>
+
+      <div id="schedulePageContent">
+        <p>Memuat halaman manajemen jadwal...</p>
+      </div>
+    </section>
+
+    <p>
+      <a href="dashboard-admin.html">Kembali ke Dashboard Admin</a>
+    </p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/manajemen-jadwal.js"></script>
+
+</body>
+</html>
