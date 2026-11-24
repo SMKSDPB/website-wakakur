@@ -12,8 +12,8 @@
   const configs = {
     teachers: {
       table: "teachers",
-      fields: ["id", "teacher_code", "name", "email", "phone", "employment_status"],
-      order: "name"
+      fields: ["id", "teacher_code", "full_name", "email", "phone", "employment_status"],
+      order: "full_name"
     },
     classes: {
       table: "classes",
@@ -145,7 +145,7 @@
       <tr>
         <td>${index + 1}</td>
         <td>${escapeHTML(item.teacher_code)}</td>
-        <td>${escapeHTML(item.name)}</td>
+        <td>${escapeHTML(item.full_name)}</td>
         <td>${escapeHTML(item.email || "-")}</td>
         <td>${escapeHTML(item.phone || "-")}</td>
         <td>${escapeHTML(item.employment_status || "-")}</td>
@@ -223,7 +223,7 @@
       return `
         <tr>
           <td>${index + 1}</td>
-          <td>${escapeHTML(teacher?.name || "Data guru tidak ditemukan")}</td>
+          <td>${escapeHTML(teacher?.full_name || "Data guru tidak ditemukan")}</td>
           <td>${escapeHTML(classroom?.class_name || "Data rombel tidak ditemukan")}</td>
           <td>${escapeHTML(subject?.subject_name || "Data mapel tidak ditemukan")}</td>
           <td>${escapeHTML(item.hours_per_week)}</td>
@@ -272,7 +272,7 @@
         id: "assignmentTeacher",
         data: tables.teachers,
         value: "id",
-        label: item => item.name
+        label: item => item.full_name
       },
       {
         id: "assignmentClass",
@@ -313,7 +313,7 @@
     if (type === "teachers") {
       return {
         teacher_code: document.getElementById("teacherCode").value.trim(),
-        name: document.getElementById("teacherName").value.trim(),
+        full_name: document.getElementById("teacherName").value.trim(),
         email: document.getElementById("teacherEmail").value.trim() || null,
         phone: document.getElementById("teacherPhone").value.trim() || null,
         employment_status: document.getElementById("teacherStatus").value
@@ -439,7 +439,7 @@
     const mappings = {
       teachers: {
         teacherCode: item.teacher_code,
-        teacherName: item.name,
+        teacherName: item.full_name,
         teacherEmail: item.email || "",
         teacherPhone: item.phone || "",
         teacherStatus: item.employment_status
@@ -496,7 +496,7 @@
     if (!item) return;
 
     const label =
-      type === "teachers" ? item.name :
+      type === "teachers" ? item.full_name :
       type === "classes" ? item.class_name :
       type === "subjects" ? item.subject_name :
       "tugas mengajar";
