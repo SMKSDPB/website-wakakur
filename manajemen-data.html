@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Manajemen Data - Website Wakakur</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <style>
+    body {
+      margin: 0;
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+
+    .admin-header {
+      background: #901518;
+      color: white;
+      padding: 20px;
+    }
+
+    .admin-header h1 {
+      margin: 0 0 6px;
+    }
+
+    .admin-container {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 0 18px;
+    }
+
+    .admin-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .admin-button {
+      display: inline-block;
+      background: #901518;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .admin-button.secondary {
+      background: #666;
+    }
+
+    .module-card {
+      background: white;
+      padding: 22px;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      margin-top: 22px;
+    }
+
+    .module-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 12px;
+    }
+
+    .tab-button {
+      border: 1px solid #901518;
+      background: white;
+      color: #901518;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tab-button.active {
+      background: #901518;
+      color: white;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .module-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      grid-column: 1 / -1;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .module-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    .module-table th,
+    .module-table td {
+      padding: 11px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .module-table th {
+      background: #f5d66e;
+      color: #333;
+    }
+
+    .module-message {
+      margin: 12px 0;
+      font-size: 14px;
+    }
+
+    .module-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .module-actions button {
+      border: none;
+      padding: 7px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #901518;
+      color: white;
+    }
+
+    .module-actions button.danger {
+      background: #b00020;
+    }
+
+    @media (max-width: 600px) {
+      .module-card {
+        padding: 15px;
+      }
+
+      .tab-button {
+        flex: 1 1 45%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="admin-header">
+    <div class="admin-top">
+      <div>
+        <h1>Manajemen Data</h1>
+        <div>Pengelolaan Data Guru, Rombel, dan Tugas Mengajar</div>
+      </div>
+
+      <a class="admin-button secondary" href="dashboard-admin.html">
+        Kembali ke Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="admin-container">
+
+    <h2>Manajemen Data Akademik</h2>
+    <p>Kelola data dasar yang digunakan dalam administrasi pembelajaran sekolah.</p>
+
+    <section class="module-card">
+
+      <nav class="module-tabs">
+        <button type="button" class="tab-button active" data-tab="teachers">
+          Data Guru
+        </button>
+
+        <button type="button" class="tab-button" data-tab="classes">
+          Data Rombel
+        </button>
+
+        <button type="button" class="tab-button" data-tab="subjects">
+          Mata Pelajaran
+        </button>
+
+        <button type="button" class="tab-button" data-tab="assignments">
+          Tugas Mengajar
+        </button>
+      </nav>
+
+      <!-- TAB DATA GURU -->
+      <section class="tab-panel active" id="teachersPanel">
+        <h3>Data Guru</h3>
+        <p>Kelola identitas dan informasi dasar guru.</p>
+
+        <div class="module-message" id="teacherMessage"></div>
+
+        <form id="teacherForm" class="module-form">
+          <input type="hidden" id="teacherId">
+
+          <div class="form-group">
+            <label for="teacherCode">Kode Internal Guru</label>
+            <input type="text" id="teacherCode" placeholder="Contoh: G001" required>
+          </div>
+
+          <div class="form-group">
+            <label for="teacherName">Nama Guru</label>
+            <input type="text" id="teacherName" required>
+          </div>
+
+          <div class="form-group">
+            <label for="teacherEmail">Email</label>
+            <input type="email" id="teacherEmail">
+          </div>
+
+          <div class="form-group">
+            <label for="teacherPhone">Nomor Telepon</label>
+            <input type="text" id="teacherPhone">
+          </div>
+
+          <div class="form-group">
+            <label for="teacherStatus">Status Kepegawaian</label>
+            <select id="teacherStatus" required>
+              <option value="">Pilih Status</option>
+              <option value="GTY">GTY</option>
+              <option value="GTT">GTT</option>
+              <option value="ASN">ASN</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="admin-button" id="saveTeacherButton">
+              Simpan Guru
+            </button>
+
+            <button type="button" class="admin-button secondary" id="cancelTeacherButton" hidden>
+              Batal Edit
+            </button>
+          </div>
+        </form>
+
+        <div class="table-wrapper">
+          <table class="module-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Kode</th>
+                <th>Nama Guru</th>
+                <th>Email</th>
+                <th>Telepon</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="teacherTableBody">
+              <tr><td colspan="7">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB DATA ROMBEL -->
+      <section class="tab-panel" id="classesPanel">
+        <h3>Data Rombel</h3>
+        <p>Kelola rombongan belajar berdasarkan tingkat, program, dan tahun ajaran.</p>
+
+        <div class="module-message" id="classMessage"></div>
+
+        <form id="classForm" class="module-form">
+          <input type="hidden" id="classId">
+
+          <div class="form-group">
+            <label for="className">Nama Rombel</label>
+            <input type="text" id="className" placeholder="Contoh: X Perhotelan" required>
+          </div>
+
+          <div class="form-group">
+            <label for="classGrade">Tingkat</label>
+            <select id="classGrade" required>
+              <option value="">Pilih Tingkat</option>
+              <option value="X">X</option>
+              <option value="XI">XI</option>
+              <option value="XII">XII</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="classProgram">Program Keahlian</label>
+            <select id="classProgram" required>
+              <option value="">Pilih Program</option>
+              <option value="Perhotelan">Perhotelan</option>
+              <option value="Usaha Layanan Pariwisata">Usaha Layanan Pariwisata</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="classYear">Tahun Ajaran</label>
+            <input type="text" id="classYear" placeholder="2026/2027" required>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="admin-button" id="saveClassButton">
+              Simpan Rombel
+            </button>
+
+            <button type="button" class="admin-button secondary" id="cancelClassButton" hidden>
+              Batal Edit
+            </button>
+          </div>
+        </form>
+
+        <div class="table-wrapper">
+          <table class="module-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Nama Rombel</th>
+                <th>Tingkat</th>
+                <th>Program</th>
+                <th>Tahun Ajaran</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="classTableBody">
+              <tr><td colspan="6">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB MATA PELAJARAN -->
+      <section class="tab-panel" id="subjectsPanel">
+        <h3>Mata Pelajaran</h3>
+        <p>Kelola daftar mata pelajaran sekolah.</p>
+
+        <div class="module-message" id="subjectMessage"></div>
+
+        <form id="subjectForm" class="module-form">
+          <input type="hidden" id="subjectId">
+
+          <div class="form-group">
+            <label for="subjectName">Nama Mata Pelajaran</label>
+            <input type="text" id="subjectName" required>
+          </div>
+
+          <div class="form-group">
+            <label for="subjectCode">Kode Mata Pelajaran</label>
+            <input type="text" id="subjectCode" placeholder="Contoh: PP" >
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="admin-button" id="saveSubjectButton">
+              Simpan Mata Pelajaran
+            </button>
+
+            <button type="button" class="admin-button secondary" id="cancelSubjectButton" hidden>
+              Batal Edit
+            </button>
+          </div>
+        </form>
+
+        <div class="table-wrapper">
+          <table class="module-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Nama Mata Pelajaran</th>
+                <th>Kode</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="subjectTableBody">
+              <tr><td colspan="4">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB TUGAS MENGAJAR -->
+      <section class="tab-panel" id="assignmentsPanel">
+        <h3>Tugas Mengajar</h3>
+        <p>Hubungkan guru dengan rombel, mata pelajaran, dan jumlah jam pelajaran.</p>
+
+        <div class="module-message" id="assignmentMessage"></div>
+
+        <form id="assignmentForm" class="module-form">
+          <input type="hidden" id="assignmentId">
+
+          <div class="form-group">
+            <label for="assignmentTeacher">Guru</label>
+            <select id="assignmentTeacher" required>
+              <option value="">Pilih Guru</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="assignmentClass">Rombel</label>
+            <select id="assignmentClass" required>
+              <option value="">Pilih Rombel</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="assignmentSubject">Mata Pelajaran</label>
+            <select id="assignmentSubject" required>
+              <option value="">Pilih Mata Pelajaran</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="assignmentHours">Jumlah JP per Minggu</label>
+            <input type="number" id="assignmentHours" min="1" max="50" required>
+          </div>
+
+          <div class="form-group">
+            <label for="assignmentYear">Tahun Ajaran</label>
+            <input type="text" id="assignmentYear" placeholder="2026/2027" required>
+          </div>
+
+          <div class="form-group">
+            <label for="assignmentSemester">Semester</label>
+            <select id="assignmentSemester" required>
+              <option value="">Pilih Semester</option>
+              <option value="1">Semester Ganjil</option>
+              <option value="2">Semester Genap</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="admin-button" id="saveAssignmentButton">
+              Simpan Tugas Mengajar
+            </button>
+
+            <button type="button" class="admin-button secondary" id="cancelAssignmentButton" hidden>
+              Batal Edit
+            </button>
+          </div>
+        </form>
+
+        <div class="table-wrapper">
+          <table class="module-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Guru</th>
+                <th>Rombel</th>
+                <th>Mata Pelajaran</th>
+                <th>JP/Minggu</th>
+                <th>Tahun Ajaran</th>
+                <th>Semester</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="assignmentTableBody">
+              <tr><td colspan="8">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </section>
+
+    <p style="margin-top:25px">
+      <a href="dashboard-admin.html">← Kembali ke Dashboard Wakakur</a>
+    </p>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/manajemen-data.js"></script>
+
+</body>
+</html>
