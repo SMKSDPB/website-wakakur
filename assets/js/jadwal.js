@@ -57,7 +57,7 @@
 
   function renderPage() {
     const academicYears = getUniqueValues(schedules, "academic_year");
-    const semesters = getUniqueValues(schedules, "semester");
+    const semesters = ["Ganjil", "Genap"];
 
     content.innerHTML = `
       <div class="form-group">
