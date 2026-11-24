@@ -49,8 +49,41 @@
     return String(value || "").slice(0, 5);
   }
 
+  function getUniqueValues(items, field) {
+    return [...new Set(
+      items.map(item => item[field]).filter(Boolean)
+    )].sort();
+  }
+
   function renderPage() {
+    const academicYears = getUniqueValues(schedules, "academic_year");
+    const semesters = getUniqueValues(schedules, "semester");
+
     content.innerHTML = `
+      <div class="form-group">
+        <label for="publicFilterYear">Tahun Pelajaran</label>
+        <select id="publicFilterYear">
+          <option value="">Semua Tahun Pelajaran</option>
+          ${academicYears.map(item => `
+            <option value="${escapeHTML(item)}">
+              ${escapeHTML(item)}
+            </option>
+          `).join("")}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="publicFilterSemester">Semester</label>
+        <select id="publicFilterSemester">
+          <option value="">Semua Semester</option>
+          ${semesters.map(item => `
+            <option value="${escapeHTML(item)}">
+              ${escapeHTML(item)}
+            </option>
+          `).join("")}
+        </select>
+      </div>
+
       <div class="form-group">
         <label for="publicFilterClass">Pilih Kelas</label>
         <select id="publicFilterClass">
@@ -78,11 +111,15 @@
       <div id="publicScheduleList"></div>
     `;
 
-    document.getElementById("publicFilterClass")
-      .addEventListener("change", renderSchedules);
-
-    document.getElementById("publicFilterTeacher")
-      .addEventListener("change", renderSchedules);
+    [
+      "publicFilterYear",
+      "publicFilterSemester",
+      "publicFilterClass",
+      "publicFilterTeacher"
+    ].forEach(id => {
+      document.getElementById(id)
+        .addEventListener("change", renderSchedules);
+    });
 
     renderSchedules();
   }
@@ -90,6 +127,12 @@
   function renderSchedules() {
     const list = document.getElementById("publicScheduleList");
     if (!list) return;
+
+    const yearFilter =
+      document.getElementById("publicFilterYear").value;
+
+    const semesterFilter =
+      document.getElementById("publicFilterSemester").value;
 
     const classFilter =
       document.getElementById("publicFilterClass").value;
@@ -102,6 +145,8 @@
       if (!assignment) return false;
 
       return (
+        (!yearFilter || item.academic_year === yearFilter) &&
+        (!semesterFilter || item.semester === semesterFilter) &&
         (!classFilter || assignment.class_id === classFilter) &&
         (!teacherFilter || assignment.teacher_id === teacherFilter)
       );
@@ -114,7 +159,7 @@
 
     if (!filtered.length) {
       list.innerHTML = `
-        <p>Belum ada jadwal pembelajaran yang dipublikasikan.</p>
+        <p>Belum ada jadwal pembelajaran untuk pilihan tersebut.</p>
       `;
       return;
     }
@@ -198,7 +243,6 @@
       ]);
 
       const error = results.find(result => result.error);
-
       if (error) throw error.error;
 
       schedules = results[0].data || [];
