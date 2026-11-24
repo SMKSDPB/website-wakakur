@@ -5,10 +5,6 @@
   const content = document.getElementById("publicScheduleContent");
 
   let schedules = [];
-  let assignments = [];
-  let teachers = [];
-  let classes = [];
-  let subjects = [];
 
   const days = [
     "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"
@@ -29,35 +25,21 @@
     message.className = `message ${type}`;
   }
 
-  function getAssignment(id) {
-    return assignments.find(item => item.id === id);
-  }
-
-  function getTeacher(id) {
-    return teachers.find(item => item.id === id);
-  }
-
-  function getClass(id) {
-    return classes.find(item => item.id === id);
-  }
-
-  function getSubject(id) {
-    return subjects.find(item => item.id === id);
-  }
-
   function getTime(value) {
     return String(value || "").slice(0, 5);
   }
 
-  function getUniqueValues(items, field) {
+  function getUniqueValues(field) {
     return [...new Set(
-      items.map(item => item[field]).filter(Boolean)
+      schedules.map(item => item[field]).filter(Boolean)
     )].sort();
   }
 
   function renderPage() {
-    const academicYears = getUniqueValues(schedules, "academic_year");
+    const academicYears = getUniqueValues("academic_year");
     const semesters = ["Ganjil", "Genap"];
+    const classNames = getUniqueValues("class_name");
+    const teacherNames = getUniqueValues("teacher_name");
 
     content.innerHTML = `
       <div class="form-group">
@@ -77,9 +59,7 @@
         <select id="publicFilterSemester">
           <option value="">Semua Semester</option>
           ${semesters.map(item => `
-            <option value="${escapeHTML(item)}">
-              ${escapeHTML(item)}
-            </option>
+            <option value="${item}">${item}</option>
           `).join("")}
         </select>
       </div>
@@ -88,9 +68,9 @@
         <label for="publicFilterClass">Pilih Kelas</label>
         <select id="publicFilterClass">
           <option value="">Semua Kelas</option>
-          ${classes.map(item => `
-            <option value="${escapeHTML(item.id)}">
-              ${escapeHTML(item.class_name)}
+          ${classNames.map(item => `
+            <option value="${escapeHTML(item)}">
+              ${escapeHTML(item)}
             </option>
           `).join("")}
         </select>
@@ -100,9 +80,9 @@
         <label for="publicFilterTeacher">Pilih Guru</label>
         <select id="publicFilterTeacher">
           <option value="">Semua Guru</option>
-          ${teachers.map(item => `
-            <option value="${escapeHTML(item.id)}">
-              ${escapeHTML(item.full_name)}
+          ${teacherNames.map(item => `
+            <option value="${escapeHTML(item)}">
+              ${escapeHTML(item)}
             </option>
           `).join("")}
         </select>
@@ -140,17 +120,12 @@
     const teacherFilter =
       document.getElementById("publicFilterTeacher").value;
 
-    const filtered = schedules.filter(item => {
-      const assignment = getAssignment(item.assignment_id);
-      if (!assignment) return false;
-
-      return (
-        (!yearFilter || item.academic_year === yearFilter) &&
-        (!semesterFilter || item.semester === semesterFilter) &&
-        (!classFilter || assignment.class_id === classFilter) &&
-        (!teacherFilter || assignment.teacher_id === teacherFilter)
-      );
-    });
+    const filtered = schedules.filter(item => (
+      (!yearFilter || item.academic_year === yearFilter) &&
+      (!semesterFilter || item.semester === semesterFilter) &&
+      (!classFilter || item.class_name === classFilter) &&
+      (!teacherFilter || item.teacher_name === teacherFilter)
+    ));
 
     filtered.sort((a, b) =>
       days.indexOf(a.day_name) - days.indexOf(b.day_name) ||
@@ -173,7 +148,7 @@
 
       return `
         <section class="card" style="margin-top:20px;">
-          <h3>${day}</h3>
+          <h3>${escapeHTML(day)}</h3>
 
           <div style="overflow-x:auto;">
             <table>
@@ -187,26 +162,19 @@
                 </tr>
               </thead>
               <tbody>
-                ${daySchedules.map(item => {
-                  const assignment = getAssignment(item.assignment_id);
-                  const teacher = getTeacher(assignment.teacher_id);
-                  const classroom = getClass(assignment.class_id);
-                  const subject = getSubject(assignment.subject_id);
-
-                  return `
-                    <tr>
-                      <td>
-                        ${escapeHTML(getTime(item.start_time))}
-                        -
-                        ${escapeHTML(getTime(item.end_time))}
-                      </td>
-                      <td>${escapeHTML(classroom?.class_name || "-")}</td>
-                      <td>${escapeHTML(subject?.subject_name || "-")}</td>
-                      <td>${escapeHTML(teacher?.full_name || "-")}</td>
-                      <td>${escapeHTML(item.room_name || "-")}</td>
-                    </tr>
-                  `;
-                }).join("")}
+                ${daySchedules.map(item => `
+                  <tr>
+                    <td>
+                      ${escapeHTML(getTime(item.start_time))}
+                      -
+                      ${escapeHTML(getTime(item.end_time))}
+                    </td>
+                    <td>${escapeHTML(item.class_name || "-")}</td>
+                    <td>${escapeHTML(item.subject_name || "-")}</td>
+                    <td>${escapeHTML(item.teacher_name || "-")}</td>
+                    <td>${escapeHTML(item.room_name || "-")}</td>
+                  </tr>
+                `).join("")}
               </tbody>
             </table>
           </div>
@@ -224,32 +192,13 @@
     showMessage("Memuat jadwal pembelajaran...");
 
     try {
-      const results = await Promise.all([
-        client.from("schedules")
-          .select("id, assignment_id, day_name, start_time, end_time, room_name, academic_year, semester")
-          .eq("is_published", true),
+      const { data, error } = await client
+        .from("public_published_schedules")
+        .select("*");
 
-        client.from("teaching_assignments")
-          .select("id, teacher_id, class_id, subject_id"),
+      if (error) throw error;
 
-        client.from("teachers")
-          .select("id, full_name"),
-
-        client.from("classes")
-          .select("id, class_name"),
-
-        client.from("subjects")
-          .select("id, subject_name")
-      ]);
-
-      const error = results.find(result => result.error);
-      if (error) throw error.error;
-
-      schedules = results[0].data || [];
-      assignments = results[1].data || [];
-      teachers = results[2].data || [];
-      classes = results[3].data || [];
-      subjects = results[4].data || [];
+      schedules = data || [];
 
       renderPage();
 
