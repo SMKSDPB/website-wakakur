@@ -209,7 +209,8 @@
     }
 
     list.innerHTML = items.map(item => {
-      const filePath = String(item.file_path || "");
+      const filePath = String(item.file_path || "")
+  .replace(/^dokumen-publik\//, "");
       const fileName = filePath.split("/").pop();
 
       const fileUrl = window.supabaseClient
