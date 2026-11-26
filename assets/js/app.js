@@ -193,12 +193,67 @@
     dates.innerHTML = cells.join("");
   }
 
+  // Tampilkan dokumen publik dari Supabase
+  function renderDocuments(items) {
+    const list = $("downloadList");
+    if (!list) return;
+
+    if (!items.length) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <strong>Belum ada dokumen publik.</strong>
+          <p>Dokumen yang telah diterbitkan akan ditampilkan pada bagian ini.</p>
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = items.map(item => {
+      const filePath = String(item.file_path || "");
+      const fileName = filePath.split("/").pop();
+
+      const fileUrl = window.supabaseClient
+        .storage
+        .from("dokumen-publik")
+        .getPublicUrl(filePath)
+        .data.publicUrl;
+
+      return `
+        <article class="download-item">
+          <span class="file-icon">PDF</span>
+          <div>
+            <strong>${escapeHTML(item.title)}</strong>
+            <small>
+              ${escapeHTML(item.category || "Dokumen publik")}
+              ${item.description
+                ? " — " + escapeHTML(item.description)
+                : ""}
+            </small>
+          </div>
+          <a
+            class="download-link"
+            href="${escapeHTML(fileUrl)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Buka dokumen ${escapeHTML(item.title)}"
+          >
+            Buka PDF
+          </a>
+        </article>
+      `;
+    }).join("");
+  }
+
   async function loadPublicData() {
     let announcements = data.announcements || [];
     let events = data.events || [];
 
     if (window.supabaseClient) {
-      const [announcementResult, eventResult] = await Promise.all([
+      const [
+        announcementResult,
+        eventResult,
+        documentResult
+      ] = await Promise.all([
         window.supabaseClient
           .from("announcements")
           .select("title, content, published_at, is_published")
@@ -209,26 +264,36 @@
           .from("academic_events")
           .select("title, description, start_date, end_date, is_published")
           .eq("is_published", true)
-          .order("start_date", { ascending: true })
+          .order("start_date", { ascending: true }),
+
+        window.supabaseClient
+          .from("documents")
+          .select("title, description, category, file_path, is_public, is_published")
+          .eq("is_public", true)
+          .eq("is_published", true)
+          .order("created_at", { ascending: false })
       ]);
 
       if (announcementResult.error) {
-        console.error(
-          "Gagal mengambil pengumuman:",
-          announcementResult.error
-        );
+        console.error("Gagal mengambil pengumuman:", announcementResult.error);
       } else {
         announcements = announcementResult.data || [];
       }
 
       if (eventResult.error) {
-        console.error(
-          "Gagal mengambil agenda:",
-          eventResult.error
-        );
+        console.error("Gagal mengambil agenda:", eventResult.error);
       } else {
         events = eventResult.data || [];
       }
+
+      if (documentResult.error) {
+        console.error("Gagal mengambil dokumen:", documentResult.error);
+        renderDocuments([]);
+      } else {
+        renderDocuments(documentResult.data || []);
+      }
+    } else {
+      renderDocuments([]);
     }
 
     renderAnnouncements(announcements);
@@ -266,5 +331,6 @@
     renderAnnouncements(data.announcements || []);
     renderAgenda(data.events || []);
     renderCalendar(data.events || []);
+    renderDocuments([]);
   });
 })();
