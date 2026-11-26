@@ -581,12 +581,13 @@
       .eq("user_id", sessionData.session.user.id)
       .maybeSingle();
 
-    if (
+       if (
       profileError ||
       !profile ||
       !profile.is_active ||
       !["admin", "wakakur"].includes(profile.role)
     ) {
+      content.innerHTML = "";
       showMessage("Anda tidak memiliki akses ke halaman ini.", "error");
       return;
     }
