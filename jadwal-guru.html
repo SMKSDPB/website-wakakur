@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Jadwal Pribadi Guru SMKS Dua Putra Biinmaffo">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Jadwal Guru - SMKS Dua Putra Biinmaffo</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="main-header">
+    <div class="container">
+      <h1>Jadwal Pribadi Guru</h1>
+      <p>SMKS Dua Putra Biinmaffo</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="card">
+      <h2>Login Guru</h2>
+      <p>Silakan masuk untuk melihat jadwal mengajar pribadi Anda.</p>
+
+      <form id="teacherLoginForm">
+        <div class="form-group">
+          <label for="teacherEmail">Email</label>
+          <input
+            type="email"
+            id="teacherEmail"
+            required
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="teacherPassword">Password</label>
+          <input
+            type="password"
+            id="teacherPassword"
+            required
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" id="teacherLoginButton">
+          Masuk
+        </button>
+
+        <div id="teacherLoginMessage" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <section class="card" id="teacherPanel" hidden>
+      <h2 id="teacherWelcome">Jadwal Mengajar</h2>
+
+      <button type="button" id="teacherLogoutButton">
+        Keluar
+      </button>
+
+      <div id="teacherScheduleMessage" role="status" aria-live="polite"></div>
+
+      <div id="teacherScheduleContent">
+        <p>Memuat jadwal mengajar...</p>
+      </div>
+    </section>
+
+    <p>
+      <a href="index.html">Kembali ke Beranda</a>
+    </p>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/jadwal-guru.js"></script>
+
+</body>
+</html>
