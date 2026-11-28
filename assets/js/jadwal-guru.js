@@ -53,9 +53,29 @@
     scheduleContent.innerHTML = "";
   }
 
+  // Memeriksa role dan status akun.
+  async function verifyGuru(userId) {
+    const { data: profile, error } = await client
+      .from("profiles")
+      .select("role, is_active")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!profile || !profile.is_active) {
+      throw new Error("Akun tidak aktif atau profil tidak ditemukan.");
+    }
+
+    if (profile.role !== "guru") {
+      throw new Error("Halaman ini khusus untuk akun Guru.");
+    }
+
+    return profile;
+  }
+
   async function loadTeacherSchedules() {
     showScheduleMessage("Memuat jadwal mengajar...");
-
     scheduleContent.innerHTML = "<p>Mohon tunggu...</p>";
 
     try {
@@ -148,22 +168,35 @@
     }
   }
 
+  // Memeriksa sesi login saat halaman dibuka.
   async function checkSession() {
     const { data, error } = await client.auth.getSession();
 
     if (error) {
-      showLoginMessage("Gagal memeriksa sesi login.");
+      showLoggedOut();
+      showLoginMessage("Gagal memeriksa sesi login.", "error");
       return;
     }
 
-    if (data.session) {
+    if (!data.session) {
+      showLoggedOut();
+      return;
+    }
+
+    try {
+      await verifyGuru(data.session.user.id);
+
       showLoggedIn();
       await loadTeacherSchedules();
-    } else {
+
+    } catch (error) {
+      await client.auth.signOut();
       showLoggedOut();
+      showLoginMessage(error.message, "error");
     }
   }
 
+  // Login khusus akun Guru.
   loginForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
@@ -175,27 +208,30 @@
     showLoginMessage("Sedang memeriksa akun...");
 
     try {
-      const { error } = await client.auth.signInWithPassword({
+      const { data, error } = await client.auth.signInWithPassword({
         email,
         password
       });
 
       if (error) throw error;
 
+      await verifyGuru(data.user.id);
+
       showLoggedIn();
       await loadTeacherSchedules();
 
     } catch (error) {
-      showLoginMessage(
-        "Login gagal. Periksa email dan password Anda.",
-        "error"
-      );
+      await client.auth.signOut();
+      showLoggedOut();
+      showLoginMessage(error.message, "error");
+
     } finally {
       loginButton.disabled = false;
       loginButton.textContent = "Masuk";
     }
   });
 
+  // Logout.
   logoutButton.addEventListener("click", async function () {
     logoutButton.disabled = true;
 
