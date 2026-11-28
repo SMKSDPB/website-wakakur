@@ -19,3 +19,239 @@
 .welcome-section{background:#fff}.welcome-grid{display:grid;grid-template-columns:190px 1fr;gap:55px;align-items:start}.welcome-mark{background:linear-gradient(145deg,var(--maroon-dark),var(--maroon));border-radius:18px;min-height:205px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gold);box-shadow:0 15px 30px #68101422}.welcome-mark span{font:800 78px/1 Manrope}.welcome-mark small{text-align:center;letter-spacing:2px;font-size:9px;margin-top:13px;color:#fff}.welcome-copy{max-width:780px}.welcome-copy>p{font-size:13px;color:#626262;margin:15px 0}.welcome-sign{border-left:3px solid var(--gold);padding:5px 0 5px 14px;margin-top:22px}.welcome-sign strong,.welcome-sign small{display:block}.welcome-sign strong{font:700 13px Manrope;color:var(--maroon)}.welcome-sign small{font-size:11px;color:var(--muted);margin-top:3px}
 .public-schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.public-schedule-card,.private-schedule-card{border:1px solid var(--line);border-radius:var(--radius);padding:26px;background:#fff}.public-schedule-card h3,.private-schedule-card h3{font:800 19px/1.3 Manrope;margin:10px 0}.public-schedule-card p,.private-schedule-card p{font-size:12px;color:var(--muted)}.public-schedule-card ul{padding-left:18px;margin:15px 0 20px;color:#555;font-size:12px}.public-schedule-card li{margin:7px 0}.schedule-kicker{font-size:9px;letter-spacing:1.4px;color:var(--maroon);font-weight:800}.private-schedule-card{background:#fbf8f6;border-color:#e6d8d8}.lock-symbol{width:42px;height:42px;border-radius:11px;background:#f3e8e8;color:var(--maroon);display:grid;place-items:center;font-size:22px;margin-bottom:12px}.login-status{border-top:1px solid var(--line);padding-top:14px;margin-top:18px}.login-status strong,.login-status small{display:block}.login-status strong{font-size:11px;color:var(--maroon)}.login-status small{font-size:10px;color:var(--muted);margin-top:3px}.privacy-note{font-size:10px;color:#888;margin:14px 0 0}.empty-state{grid-column:1/-1;background:#fff;border:1px dashed #d9c7c7;border-radius:14px;padding:24px}.empty-state strong{font:700 14px Manrope;color:var(--maroon)}.empty-state p{font-size:11px;color:var(--muted);margin:6px 0 0}.empty-state.compact{padding:18px 0;border:0;background:transparent}.empty-state.compact strong{font-size:12px}.empty-state.compact p{font-size:10px}
 @media(max-width:640px){.brand-wordmark{width:40px;height:40px}.brand strong{font-size:11px}.brand small{font-size:8px}.welcome-grid{grid-template-columns:1fr;gap:25px}.welcome-mark{min-height:140px;max-width:none}.welcome-mark span{font-size:60px}.public-schedule-grid{grid-template-columns:1fr}.public-schedule-card,.private-schedule-card{padding:21px}}
+
+/* ==================================================
+   HALAMAN MANAJEMEN JADWAL PEMBELAJARAN
+   ================================================== */
+
+.main-header {
+  background: linear-gradient(120deg, #681014, #901518);
+  color: #fff;
+  padding: 30px 0;
+}
+
+.main-header h1 {
+  font: 800 clamp(24px, 3vw, 34px)/1.25 Manrope, sans-serif;
+  margin-bottom: 8px;
+}
+
+.main-header p {
+  color: #f5dede;
+  font-size: 13px;
+  margin-bottom: 0;
+}
+
+#scheduleMessage {
+  margin: 16px 0;
+}
+
+#schedulePageContent > .card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 26px;
+  margin-bottom: 24px;
+  box-shadow: 0 5px 20px #00000008;
+}
+
+#schedulePageContent h3 {
+  font: 800 19px Manrope, sans-serif;
+  color: var(--maroon);
+  margin-bottom: 20px;
+}
+
+/* Form tambah dan edit */
+
+#scheduleForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+#scheduleForm .form-group {
+  margin: 0;
+}
+
+#scheduleForm .form-group:first-of-type {
+  grid-column: 1 / -1;
+}
+
+#schedulePageContent .form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+#schedulePageContent input,
+#schedulePageContent select {
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+  border: 1px solid #ded7d5;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font: 13px 'DM Sans', sans-serif;
+}
+
+#schedulePageContent input:focus,
+#schedulePageContent select:focus {
+  outline: 2px solid #90151825;
+  border-color: var(--maroon);
+}
+
+#schedulePageContent input[readonly] {
+  background: #f5f2f0;
+  color: #777;
+}
+
+#schedulePageContent button {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 15px;
+  background: var(--maroon);
+  color: #fff;
+  font: 700 12px 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+#schedulePageContent button:hover {
+  background: var(--maroon-dark);
+}
+
+#schedulePageContent button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+#scheduleForm button {
+  width: fit-content;
+}
+
+#cancelScheduleButton {
+  background: #777;
+}
+
+/* Filter jadwal */
+
+#schedulePageContent > .card:nth-child(2) .form-group {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: top;
+  width: 19%;
+  margin: 0 1% 16px 0;
+}
+
+/* Tabel jadwal */
+
+#schedulePageContent > .card:nth-child(2) > div[style*="overflow-x"] {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+#schedulePageContent table {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+#schedulePageContent th {
+  background: var(--maroon);
+  color: #fff;
+  padding: 13px 11px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+#schedulePageContent td {
+  padding: 12px 11px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+#schedulePageContent tbody tr:nth-child(even) {
+  background: #faf8f7;
+}
+
+#schedulePageContent tbody tr:hover {
+  background: #fff8e4;
+}
+
+#schedulePageContent td button {
+  margin: 2px;
+  white-space: nowrap;
+}
+
+#schedulePageContent td button[data-action="delete"] {
+  background: #a83232;
+}
+
+#schedulePageContent td button[data-action="publish"] {
+  background: #287b4b;
+}
+
+#schedulePageContent td button[data-action="unpublish"] {
+  background: #8a6410;
+}
+
+/* Pesan sistem */
+
+.message {
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.message.success {
+  background: #eaf6ee;
+  color: #246b3b;
+}
+
+.message.error {
+  background: #fbeaea;
+  color: #a12626;
+}
+
+.message.info {
+  background: #f2f0ed;
+  color: #555;
+}
+
+/* Tautan kembali */
+
+main.container > p:last-child {
+  margin: 20px 0 30px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--maroon);
+}
+
+/* Tampilan ponsel */
+
+@media (max-width: 640px) {
+  #schedulePageContent > .card {
+    padding: 17px;
+  }
+
+  #scheduleForm {
+    grid-template-columns: 1fr;
+  }
+
+  #scheduleForm .form-group:first-of-type {
+    grid-column: auto;
+  }
+
+  #schedulePageContent > .card:nth-child(2) .form-group {
+    width: 100%;
+    margin: 0 0 12px;
+  }
+
+  #schedulePageContent button {
+    min-height: 40px;
+  }
+}
