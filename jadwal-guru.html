@@ -1,262 +1,62 @@
 
-(function () {
-  const client = window.supabaseClient;
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Jadwal Mengajar Guru SMKS Dua Putra Biinmaffo">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Jadwal Guru - SMKS Dua Putra Biinmaffo</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
 
-  const loginForm = document.getElementById("teacherLoginForm");
-  const loginMessage = document.getElementById("teacherLoginMessage");
-  const loginButton = document.getElementById("teacherLoginButton");
+  <header class="main-header">
+    <div class="container">
+      <h1>Jadwal Mengajar Guru</h1>
+      <p>SMKS Dua Putra Biinmaffo</p>
+    </div>
+  </header>
 
-  const teacherPanel = document.getElementById("teacherPanel");
-  const teacherWelcome = document.getElementById("teacherWelcome");
-  const logoutButton = document.getElementById("teacherLogoutButton");
+  <main class="container">
 
-  const scheduleMessage = document.getElementById("teacherScheduleMessage");
-  const scheduleContent = document.getElementById("teacherScheduleContent");
+    <section class="card">
+      <h2>Login Guru</h2>
+      <p>Masuk menggunakan akun Guru yang telah diberikan sekolah.</p>
 
-  const days = [
-    "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"
-  ];
+      <form id="teacherLoginForm">
+        <div class="form-group">
+          <label for="teacherEmail">Email</label>
+          <input type="email" id="teacherEmail" required autocomplete="username">
+        </div>
 
-  function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    })[char]);
-  }
+        <div class="form-group">
+          <label for="teacherPassword">Password</label>
+          <input type="password" id="teacherPassword" required autocomplete="current-password">
+        </div>
 
-  function showLoginMessage(text, type = "info") {
-    loginMessage.textContent = text;
-    loginMessage.className = `message ${type}`;
-  }
+        <button type="submit" id="teacherLoginButton">Masuk</button>
+        <p id="teacherLoginMessage" class="message" role="status"></p>
+      </form>
+    </section>
 
-  function showScheduleMessage(text, type = "info") {
-    scheduleMessage.textContent = text;
-    scheduleMessage.className = `message ${type}`;
-  }
+    <section id="teacherPanel" class="card" hidden>
+      <h2 id="teacherWelcome">Jadwal Mengajar Guru</h2>
 
-  function getTime(value) {
-    return String(value || "").slice(0, 5);
-  }
+      <div id="teacherScheduleMessage" class="message" role="status"></div>
 
-  function showLoggedIn() {
-    loginForm.closest(".card").hidden = true;
-    teacherPanel.hidden = false;
-  }
+      <div id="teacherScheduleContent"></div>
 
-  function showLoggedOut() {
-    loginForm.closest(".card").hidden = false;
-    teacherPanel.hidden = true;
-    loginForm.reset();
-    scheduleContent.innerHTML = "";
-  }
+      <button type="button" id="teacherLogoutButton">Keluar</button>
+    </section>
 
-  // Memeriksa role dan status akun.
-  async function verifyGuru(userId) {
-    const { data: profile, error } = await client
-      .from("profiles")
-      .select("role, is_active")
-      .eq("user_id", userId)
-      .maybeSingle();
+    <p><a href="index.html">Kembali ke halaman utama</a></p>
 
-    if (error) throw error;
+  </main>
 
-    if (!profile || !profile.is_active) {
-      throw new Error("Akun tidak aktif atau profil tidak ditemukan.");
-    }
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/jadwal-guru.js"></script>
 
-    if (profile.role !== "guru") {
-      throw new Error("Halaman ini khusus untuk akun Guru.");
-    }
-
-    return profile;
-  }
-
-  async function loadTeacherSchedules() {
-    showScheduleMessage("Memuat jadwal mengajar...");
-    scheduleContent.innerHTML = "<p>Mohon tunggu...</p>";
-
-    try {
-      const { data, error } = await client
-        .from("teacher_own_schedules")
-        .select("*");
-
-      if (error) throw error;
-
-      const schedules = data || [];
-
-      if (!schedules.length) {
-        showScheduleMessage(
-          "Belum ada jadwal mengajar yang terdaftar.",
-          "success"
-        );
-        scheduleContent.innerHTML = "";
-        teacherWelcome.textContent = "Jadwal Mengajar Guru";
-        return;
-      }
-
-      teacherWelcome.textContent =
-        "Jadwal Mengajar - " + schedules[0].teacher_name;
-
-      schedules.sort((a, b) =>
-        days.indexOf(a.day_name) - days.indexOf(b.day_name) ||
-        getTime(a.start_time).localeCompare(getTime(b.start_time))
-      );
-
-      scheduleContent.innerHTML = days.map(day => {
-        const daySchedules = schedules.filter(
-          item => item.day_name === day
-        );
-
-        if (!daySchedules.length) return "";
-
-        return `
-          <section class="card" style="margin-top:20px;">
-            <h3>${escapeHTML(day)}</h3>
-
-            <div style="overflow-x:auto;">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Jam</th>
-                    <th>Kelas</th>
-                    <th>Mata Pelajaran</th>
-                    <th>Ruangan</th>
-                    <th>Tahun Pelajaran</th>
-                    <th>Semester</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${daySchedules.map(item => `
-                    <tr>
-                      <td>
-                        ${escapeHTML(getTime(item.start_time))}
-                        -
-                        ${escapeHTML(getTime(item.end_time))}
-                      </td>
-                      <td>${escapeHTML(item.class_name || "-")}</td>
-                      <td>${escapeHTML(item.subject_name || "-")}</td>
-                      <td>${escapeHTML(item.room_name || "-")}</td>
-                      <td>${escapeHTML(item.academic_year || "-")}</td>
-                      <td>${escapeHTML(item.semester || "-")}</td>
-                      <td>
-                        ${item.is_published ? "Dipublikasikan" : "Draf"}
-                      </td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        `;
-      }).join("");
-
-      showScheduleMessage(
-        "Jadwal mengajar berhasil dimuat.",
-        "success"
-      );
-
-    } catch (error) {
-      scheduleContent.innerHTML = "";
-      showScheduleMessage(
-        "Gagal memuat jadwal: " + error.message,
-        "error"
-      );
-    }
-  }
-
-  // Memeriksa sesi login ketika halaman dibuka.
-  async function checkSession() {
-    const { data, error } = await client.auth.getSession();
-
-    if (error) {
-      showLoggedOut();
-      showLoginMessage("Gagal memeriksa sesi login.", "error");
-      return;
-    }
-
-    if (!data.session) {
-      showLoggedOut();
-      return;
-    }
-
-    try {
-      await verifyGuru(data.session.user.id);
-
-      showLoggedIn();
-      await loadTeacherSchedules();
-
-    } catch (error) {
-      await client.auth.signOut();
-      showLoggedOut();
-      showLoginMessage(error.message, "error");
-    }
-  }
-
-  // Proses login khusus Guru.
-  loginForm.addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    const email = document.getElementById("teacherEmail").value.trim();
-    const password = document.getElementById("teacherPassword").value;
-
-    loginButton.disabled = true;
-    loginButton.textContent = "Memproses...";
-    showLoginMessage("Sedang memeriksa akun...");
-
-    try {
-      const { data, error } = await client.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) throw error;
-
-      await verifyGuru(data.user.id);
-
-      showLoggedIn();
-      await loadTeacherSchedules();
-
-    } catch (error) {
-      await client.auth.signOut();
-      showLoggedOut();
-      showLoginMessage(error.message, "error");
-
-    } finally {
-      loginButton.disabled = false;
-      loginButton.textContent = "Masuk";
-    }
-  });
-
-  // Proses logout.
-  logoutButton.addEventListener("click", async function () {
-    logoutButton.disabled = true;
-
-    const { error } = await client.auth.signOut();
-
-    logoutButton.disabled = false;
-
-    if (error) {
-      showScheduleMessage(
-        "Gagal keluar: " + error.message,
-        "error"
-      );
-      return;
-    }
-
-    showLoggedOut();
-    showLoginMessage("Anda telah keluar dari akun.");
-  });
-
-  if (!client) {
-    showLoginMessage("Koneksi database tidak tersedia.", "error");
-    loginButton.disabled = true;
-    return;
-  }
-
-  checkSession();
-
-})();
+</body>
+</html>
